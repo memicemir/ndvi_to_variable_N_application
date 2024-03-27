@@ -1,0 +1,47 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=NDVI and EVI Index Calculator
+qgisMinimumVersion=3.0
+description=This plugin calculates NDVI and EVI index from Sentinel 2 B02, B04 and B08 Bands.
+version=0.1
+author=Emir Memic
+email=emir_memic@windowslive.com
+
+about=This plugin was developed for calculating NDVI and EVI index from Sentinel 2 satellite images (preferably downloaded via Copernicus Browser – B02, B04 and B08 bands). It is expected to work with georeferenced drone images as well, as long as image names contain recognizable date string. This plugin is designed to produces NDVI and EVI index TIFF rasters that are going to be used as an input layers for new QGIS plugin (currently under development) capable of producing site-specific variable nitrogen application maps based on site-specific index values (Precision Agriculture).
+
+tracker=http://bugs
+repository=https://github.com/memicemir/ndvi_to_variable_N_application
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python
+
+homepage=http://homepage
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+

@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/ndvi_and_evi_index_calculator" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
