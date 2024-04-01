@@ -381,7 +381,7 @@ class NDVItoVariableNitrogenApplicationMap:
             layer_settings.setFormat(text_format)
             layer_settings.fieldName = str(self.dlg.comboBox.currentText()) #"mean"
             layer_settings.isExpression = True
-            layer_settings.placement = 1
+            #layer_settings.placement = 1
             layer_settings.formatNumbers = True  # checkbox
             layer_settings.decimals = 3 #2  # decimals number
             layer_settings.enabled = True
@@ -1111,7 +1111,7 @@ class NDVItoVariableNitrogenApplicationMap:
         layer_settings.setFormat(text_format)
         layer_settings.fieldName = Napplication  #"N-app"
         layer_settings.isExpression = True
-        layer_settings.placement = 1
+        #layer_settings.placement = 1
         layer_settings.formatNumbers = True  # checkbox
         layer_settings.decimals = 1  # decimals number
         layer_settings.enabled = True
