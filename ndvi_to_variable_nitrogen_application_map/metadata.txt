@@ -6,11 +6,12 @@
 name=NDVI to Variable Nitrogen Application Map
 qgisMinimumVersion=3.0
 description=This plugin was developed for producing variable nitrogen application maps based on index (e.g. NDVI, EVI) values.
-version=0.2
+version=0.3
 author=Emir Memic
 email=emir_memic@windowslive.com
 
-about=This open-source plugin was developed (for educational purposes) for producing variable nitrogen application maps based on site-specific variablity of NDVI (EVI) index values in satelite (or drone) images. This is Experimental version of the plugin. Some options are still being tested. In case of any issues or IMPROVMENT recommendations, please contact the author! 
+about=This open-source plugin was developed (for educational purposes) for producing variable nitrogen application maps based on site-specific variablity of NDVI (EVI) index values in satelite (or drone) images. Some options are still being tested. In case of any issues or IMPROVMENT recommendations, please contact the author! 
+	Minimal data set for testing can be found in GitHub repository which is homepage of this plugin.
 
 tracker=https://github.com/memicemir/ndvi_to_variable_N_application
 repository=https://github.com/memicemir/ndvi_to_variable_N_application
@@ -29,7 +30,7 @@ homepage=https://github.com/memicemir/ndvi_to_variable_N_application
 category=Plugins
 icon=icon.png
 # experimental flag
-experimental=True
+experimental=False
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False

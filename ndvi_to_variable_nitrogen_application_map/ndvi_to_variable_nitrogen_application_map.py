@@ -56,8 +56,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 #from random import randrange
-from scipy.stats import norm
+from scipy.stats import norm, linregress , stats 
 import statistics
+
 
 from qgis.PyQt.QtCore import QEventLoop
 
@@ -218,7 +219,7 @@ class NDVItoVariableNitrogenApplicationMap:
             self.first_start = False
             self.dlg = NDVItoVariableNitrogenApplicationMapDialog()
 
-#### me-start
+        #### me-start
         reloadPlugin('ndvi_to_variable_nitrogen_application_map')
         print ('run ndvi_to_variable_nitrogen_application_map plugin')
 
@@ -238,7 +239,7 @@ class NDVItoVariableNitrogenApplicationMap:
         self.dlg.checkBox_2.clicked.connect(self.yield_maximising_N_opt)
         self.dlg.checkBox_3.clicked.connect(self.yield_equalising_N_opt)
         
-        self.dlg.listWidget.clear()
+        #self.dlg.listWidget.clear()
         self.dlg.listWidget_2.clear()
         self.dlg.listWidget_3.clear()
         self.dlg.comboBox.clear()
@@ -250,15 +251,19 @@ class NDVItoVariableNitrogenApplicationMap:
         for layer in layers:
             listOfLayers.append(str(layer.name()))
             QCoreApplication.processEvents()
-        self.dlg.listWidget.addItems(listOfLayers)
+        #self.dlg.listWidget.addItems(listOfLayers)
+        
+        self.dlg.comboBox_3.addItems(listOfLayers)
+        
         self.dlg.listWidget_2.addItems(listOfLayers)
         self.dlg.listWidget_2.sortItems()        
         self.dlg.comboBox.addItems(['mean','median','count','sum', 'stdev', 'min', 'max'])
-        self.dlg.comboBox_2.addItems(['red','green','blue'])
+        self.dlg.comboBox_2.addItems(['green','red','blue'])
+        self.dlg.comboBox_4.addItems(['red','green','blue'])
 
-        self.dlg.listWidget.setCurrentRow(0)
+        #self.dlg.listWidget.setCurrentRow(0)
         self.dlg.listWidget_2.setCurrentRow(0)        
-#### me-end
+        #### me-end
 
         # show the dialog
         self.dlg.show()
@@ -273,8 +278,8 @@ class NDVItoVariableNitrogenApplicationMap:
     def guide_to_user(self):
         #QMessageBox.warning(self.dlg, 'Warning!', 'DSSAT directory not found! Locate manually! e.g. C:/DSSAT47')
         QMessageBox.information(None, 'Guide to user!', 
-        '1. - Input layer - site-specific units deliniated based on which zonal statistics are calculated.\n'
-        + '   - Input raster - raster image providing pixel based info for deliniated areas used for zonal statistics.\n\n'
+        '1. - Input layer - site-specific units deliniated (e.g. shape file) based on which zonal statistics are calculated.\n'
+        + '   - Input raster - raster image providing pixel based info (e.g. NDVI .TIFF file) for deliniated areas used for zonal statistics.\n\n'
         + '2. - Image analysis - produces raster based on initial site-specific polygon deliniation. Here user can setup number of index clases that are calculated from 0 to 1, with color.\n\n'
         + '3. - Calculate time-series trends - raster values added into time-series figure, and saved in FigureSaved dir. Index-map push button produces maps and saved them in SavePDFs dir.\n\n'
         + '4. - N recommendation setup - based on in-field variablity a user can define min and max N prescription that will be allocated to index values in relative terms.\n'
@@ -312,8 +317,14 @@ class NDVItoVariableNitrogenApplicationMap:
             print ('meCounterCheck' ,meCounterCheck, 'current image', selectedLayer1)
             percent = percent + percentInc
 
-            selectedLayer = str(self.dlg.listWidget.currentItem().text())            
+            #selectedLayer = str(self.dlg.listWidget.currentItem().text())
+            #polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
+            #print ('polygonLayer', polygonLayer)
+            
+            selectedLayer = str(self.dlg.comboBox_3.currentText())            
             polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
+            print ('polygonLayer----------', polygonLayer)
+            
             
             # specify raster filename
             #selectedLayer1 = str(self.dlg.listWidget_2.currentItem().text())
@@ -349,7 +360,7 @@ class NDVItoVariableNitrogenApplicationMap:
                                                                                     )).calculateStatistics(None)
 
 
-# added here to use directly ndvi calculated from copernicus - start
+            # added here to use directly ndvi calculated from copernicus - start - test this additionally
             date = str(selectedLayer1).split('_')[-1]
             if date == 'NDVI': # or date == 'EVI':
                 match = re.search(r'\d{4}-\d{2}-\d{2}', selectedLayer1)
@@ -358,7 +369,7 @@ class NDVItoVariableNitrogenApplicationMap:
                 dateName = str(date).split('-')[1] + '-' + str(date).split('-')[2] + '-' + str(date).split('-')[0]
                 print ('dateName---------', dateName)
                 selectedLayer1 = selectedLayer1 + '_' + dateName
-# added here to use directly ndvi calculated from copernicus - end             
+            # added here to use directly ndvi calculated from copernicus - end             
 
             result=processing.run("native:buffer",{'INPUT':polygonLayer,
                                                     'DISTANCE': -1.0,   # brush of weird polygon edges                                                 
@@ -371,7 +382,7 @@ class NDVItoVariableNitrogenApplicationMap:
 
             
             
-    ############################################ add labels to the active layer - start
+            ############################################ add labels to the active layer - start
             layer = iface.activeLayer()
             layer_settings  = QgsPalLayerSettings()
             text_format = QgsTextFormat()
@@ -392,8 +403,9 @@ class NDVItoVariableNitrogenApplicationMap:
             layer.triggerRepaint()
             
             QgsProject.instance().reloadAllLayers()
-    ############################################ add labels to the active layer - end  
-############################################ coloring different polygons based of field value - start     
+            ############################################ add labels to the active layer - end
+            
+            ############################################ coloring different polygons based of field value - start     
             print ('me1')
             layer = iface.activeLayer()
 
@@ -408,7 +420,7 @@ class NDVItoVariableNitrogenApplicationMap:
             myMin= 0 #1 # float(QgsZonalStatistics.Min) #0 #self.dlg.minMe
             myMax= 1 #40 #float(QgsZonalStatistics.Max) #1 #self.dlg.maxMe 
 
-##############
+            ##############
             if self.dlg.checkBox_6.isChecked():
                 for field in layer.fields():
                     idxIN = layer.dataProvider().fieldNameIndex(str(self.dlg.comboBox.currentText()))  
@@ -423,7 +435,7 @@ class NDVItoVariableNitrogenApplicationMap:
                 
                 print ('myMin', myMin)
                 print ('myMax', myMax)
-############
+            ############
 
 
             print  ('myMin', myMin, 'myMax', myMax)   
@@ -487,7 +499,7 @@ class NDVItoVariableNitrogenApplicationMap:
                    
             QgsProject.instance().reloadAllLayers()
 
-            self.dlg.progressBar.setValue(int(percent))
+            self.dlg.progressBar.setValue(int(round(percent)))
             QCoreApplication.processEvents()
             
 
@@ -503,7 +515,7 @@ class NDVItoVariableNitrogenApplicationMap:
         self.dlg.listWidget_4.addItems(listOfLayersForLater)
         self.dlg.listWidget_3.selectAll()
         
-############################################ coloring different polygons based of field value - end    
+        ############################################ coloring different polygons based of field value - end    
 
     def calculate_time_series_trend(self):
         
@@ -515,7 +527,8 @@ class NDVItoVariableNitrogenApplicationMap:
             self.dlg.pushButton_5.setEnabled(False)
             self.dlg.pushButton_3.setEnabled(True)
 
-        selectedLayer = str(self.dlg.listWidget.currentItem().text())            
+        #selectedLayer = str(self.dlg.listWidget.currentItem().text())
+        selectedLayer = str(self.dlg.comboBox_3.currentText())    
         polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
         fc = polygonLayer.featureCount()
         print ('fc', fc)
@@ -539,7 +552,7 @@ class NDVItoVariableNitrogenApplicationMap:
            
             for i in range(1, fc+1):
                 percent = percent + percentInc            
-                
+                print ('percent----', percent)
                 
                 
                 for selectedImage in self.dlg.listWidget_3.selectedItems():
@@ -566,7 +579,7 @@ class NDVItoVariableNitrogenApplicationMap:
 
                     
 
-                self.dlg.progressBar_3.setValue(int(percent))
+                self.dlg.progressBar_3.setValue(int(round(percent)))
                 QCoreApplication.processEvents()
 
             QCoreApplication.processEvents() 
@@ -578,7 +591,8 @@ class NDVItoVariableNitrogenApplicationMap:
     def plot_figures(self):
         print ('plot and save figures')
 
-        selectedLayer = str(self.dlg.listWidget.currentItem().text())            
+        #selectedLayer = str(self.dlg.listWidget.currentItem().text())
+        selectedLayer = str(self.dlg.comboBox_3.currentText())    
         polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
         fc = polygonLayer.featureCount()
         print ('fc', fc)
@@ -607,7 +621,7 @@ class NDVItoVariableNitrogenApplicationMap:
         countMe = len(newList)
         print ('countMe', countMe)
 
-################# color i am not sure if this is good and how slow it is have to check with more years 
+        ################# color i am not sure if this is good and how slow it is have to check with more years 
         colorMeTimeS = []
         yearsToUse = []
         c = np.random.rand(3,)
@@ -638,7 +652,7 @@ class NDVItoVariableNitrogenApplicationMap:
         print ('colorYear' ,colorYear)    
 
         colorIndexToUse = 0
-###################
+        ###################
 
 
 
@@ -680,13 +694,13 @@ class NDVItoVariableNitrogenApplicationMap:
                             if L == convertedDate:
                                 listValues.append(float(value))
                                 dateList.append(int(doy))
-################# color                
+                ################# color                
                 for checkColorr in colorYear:                    
                     if str(LL) == checkColorr.split('_')[0]:
                         print ('checkColorrC-----------', 'LL', LL,  checkColorr.split('_')[0], 'idx color', checkColorr.split('_')[1])
                         colorIndexToUse = int(checkColorr.split('_')[1]) - 1
                 c = colorMeTimeS[colorIndexToUse]
-################# color                
+                ################# color                
                 #plt.plot(dateList, listValues, linestyle='--', marker='o', color = c, label=str(LL) if me == int(countMe/2) else "")
                 plt.plot(dateList, listValues, linestyle='--', marker='o', color = c, label=str(LL) if me == 1 else "") # else conditions is to keep legend clean
                 
@@ -696,7 +710,7 @@ class NDVItoVariableNitrogenApplicationMap:
             #saveHere = str(i) + '_.png'
             saveHere = str(myfilepath) + '/SaveFigures' + '/' +str(i) + '__.png'
             plt.savefig(saveHere)
-            self.dlg.progressBar_2.setValue(int(percent))
+            self.dlg.progressBar_2.setValue(int(round(percent)))
             QCoreApplication.processEvents()
 
         QCoreApplication.processEvents() 
@@ -846,10 +860,11 @@ class NDVItoVariableNitrogenApplicationMap:
 
         self.dlg.textBrowser.append('   Time-series trends for each grid of all selected Layers saved in SaveFigures directory!')
 
-#####################  pdf      
+    #####################  pdf      
     def pdf_summary(self):
 
-        selectedLayer = str(self.dlg.listWidget.currentItem().text())            
+        #selectedLayer = str(self.dlg.listWidget.currentItem().text())
+        selectedLayer = str(self.dlg.comboBox_3.currentText())    
         polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
 
         myfilepathP = polygonLayer.source()
@@ -940,7 +955,7 @@ class NDVItoVariableNitrogenApplicationMap:
             print ('--------------------------1------------------------')
             QCoreApplication.processEvents()
             
-##############################               
+        ##############################               
 
     def nitrogen_prescriptions(self):
         print ('N prescriptions')
@@ -952,7 +967,8 @@ class NDVItoVariableNitrogenApplicationMap:
             self.dlg.pushButton_3.setEnabled(False)
             self.dlg.pushButton_5.setEnabled(True)
 
-        selectedLayer = str(self.dlg.listWidget.currentItem().text())            
+        #selectedLayer = str(self.dlg.listWidget.currentItem().text())
+        selectedLayer = str(self.dlg.comboBox_3.currentText())    
         polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
 
         myfilepathP = polygonLayer.source()
@@ -1095,12 +1111,13 @@ class NDVItoVariableNitrogenApplicationMap:
                 # 
 
             
-            self.dlg.progressBar_4.setValue(int(percent))
+            self.dlg.progressBar_4.setValue(int(round(percent)))
             
             QgsProject.instance().reloadAllLayers()
             activeLayer.triggerRepaint()
             QCoreApplication.processEvents()
-    ############################################ add labels to the active layer - start
+        
+        ############################################ add labels to the active layer - start
         
         layer = iface.activeLayer()
         layer_settings  = QgsPalLayerSettings()
@@ -1124,7 +1141,7 @@ class NDVItoVariableNitrogenApplicationMap:
         
         QgsProject.instance().reloadAllLayers()
         QCoreApplication.processEvents()
-    ############################################ add labels to the active layer - end 
+        ############################################ add labels to the active layer - end 
 
         layer = iface.activeLayer()
         fni = layer.fields().indexFromName(Napplication) #'nom')
@@ -1137,7 +1154,7 @@ class NDVItoVariableNitrogenApplicationMap:
 
         print ('unique_values', unique_values)
 
-        colorMeSelected = str(self.dlg.comboBox_2.currentText())
+        colorMeSelected = str(self.dlg.comboBox_4.currentText())
         redMe = 255
         greenMe = 255
         blueMe = 255
@@ -1202,7 +1219,7 @@ class NDVItoVariableNitrogenApplicationMap:
         QgsProject.instance().reloadAllLayers()
 
 
-#######################
+        #######################
 
         numberOfObsPerYear = int(len(graphingDistribution)) # 1
         c = 'blue'
@@ -1238,7 +1255,7 @@ class NDVItoVariableNitrogenApplicationMap:
         axis[0].legend(loc='center left', bbox_to_anchor=(0.8, 0.5), facecolor='white', framealpha=1.0)    
         figure.savefig('{}/{}_DistributionMe.jpg'.format(myfilepathPd, selectedLayer)) #, dpi=300)
         
-############
+        ############
 
         nrates = np.array(graphingDistribution)
         numberOfnrates = int(len(graphingDistribution))
@@ -1260,14 +1277,62 @@ class NDVItoVariableNitrogenApplicationMap:
         fig.tight_layout()
         fig.savefig('{}/{}_Distribution.jpg'.format(myfilepathPd, selectedLayer)) #, dpi=300)
 
-########################
+        ########################
 
         fig = plt.figure()        
-        plt.hist(nrates) #, bins=25, density=True, alpha=0.6, color='b')
-        plt.grid(axis = "y")
+        #plt.hist(nrates) #, bins=25, density=True, alpha=0.6, color='b')
+
+        labels, counts = np.unique(nrates, return_counts=True)
+        plt.bar(labels, counts, align='center')
+        plt.gca().set_xticks(labels)
+        plt.xticks(rotation=90)
+        
+        #plt.grid(axis = "y")
         plt.xlabel('N application rates')
-        plt.ylabel('Number of N application rates')        
+        plt.ylabel('Number of N application rates')
+        plt.tight_layout()    
         fig.savefig('{}/{}_Histogram.jpg'.format(myfilepathPd, selectedLayer)) #, dpi=300)
+
+        ##############
+        
+        ndviXaxis = []
+        NappYaxis = []
+        
+        layer = iface.activeLayer()
+        for field in layer.fields():
+            idxIN = layer.dataProvider().fieldNameIndex(str(self.dlg.comboBox.currentText()))  
+
+        idxN = provider.fieldNameIndex(Napplication)
+
+        #listOfValues = []
+        for feature in layer.getFeatures():                    
+            print ('field pull', feature.id(), 'value index',feature.attributes()[idxIN])
+            print ('field pull', feature.id(), 'value Napp',feature.attributes()[idxN])
+            #listOfValues.append(float(feature.attributes()[idxIN]))
+            ndviXaxis.append(float(feature.attributes()[idxIN]))
+            NappYaxis.append(float(feature.attributes()[idxN]))
+
+        fig = plt.figure()
+        plt.scatter(ndviXaxis, NappYaxis)
+        
+        x = np.array(ndviXaxis)
+        y = np.array(NappYaxis)
+
+        res = stats.linregress(x, y)
+        #plt.plot(x, res.intercept + res.slope*x, 'r', label='fitted line')
+        plt.plot(x, res.intercept + res.slope*x, 'r')       
+        print ('intercept', res.intercept, 'slope', res.slope)
+       
+        plt.suptitle('Fitted line slope: ' + str(round(res.slope, 2)))
+        
+        plt.xlim(0,1)
+        
+        plt.xlabel('NDVI')
+        plt.ylabel('Napp')        
+        fig.savefig('{}/{}_NDVIvsNapp.jpg'.format(myfilepathPd, selectedLayer))
+        ###############
+
+
         self.dlg.textBrowser.append('   Nitrogen prescriptions finishd.')
         
     def scale_Napp_to_actual_size_of_grid(self):
@@ -1334,4 +1399,30 @@ class NDVItoVariableNitrogenApplicationMap:
             attrsM = {idxNactual : float(applicationNrateA)}
             activeLayer.dataProvider().changeAttributeValues({feature.id() : attrsM})
             QCoreApplication.processEvents()   
-        self.dlg.textBrowser.append('   Nitrogen applications resaclling according to size of grid finished.')            
+        self.dlg.textBrowser.append('   Nitrogen applications resaclling according to size of grid finished.')  
+
+        ############################################ add labels to the active layer - start
+        
+        layer = iface.activeLayer()
+        layer_settings  = QgsPalLayerSettings()
+        text_format = QgsTextFormat()
+        text_format.setFont(QFont("Arial", 10))
+        text_format.setSize(12)
+
+        layer_settings.setFormat(text_format)
+        layer_settings.fieldName = NapplicationA  #"N-app"
+        layer_settings.isExpression = True
+        #layer_settings.placement = 1
+        layer_settings.formatNumbers = True  # checkbox
+        layer_settings.decimals = 1  # decimals number
+        layer_settings.enabled = True
+        layer_settings = QgsVectorLayerSimpleLabeling(layer_settings)
+        
+        layer.setLabelsEnabled(True)
+        layer.setLabeling(layer_settings)
+        
+        layer.triggerRepaint()
+        
+        QgsProject.instance().reloadAllLayers()
+        QCoreApplication.processEvents()
+        ############################################ add labels to the active layer - end         
