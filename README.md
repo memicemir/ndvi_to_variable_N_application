@@ -5,4 +5,6 @@ The "NDVI and EVI Index Calculator" v.:0.2 and "NDVI to Variable Nitrogen Applic
 
 Purpose of these two plugins is use of NDVI (or EVI) index for producing site-specific nitrogen application maps in agriculture (Precision Agriculture). 
 
+Use: https://github.com/memicemir/ndvi_to_variable_N_application/tree/main/SampleImage-TestPlugin - sample image to test the plugins in case of any issues.
+
 Report Bugs and issues here at GitHub!
