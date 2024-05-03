@@ -54,6 +54,7 @@ import re
 
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 #from random import randrange
 from scipy.stats import norm, linregress , stats 
@@ -231,6 +232,13 @@ class NDVItoVariableNitrogenApplicationMap:
         self.dlg.pushButton_4.clicked.connect(self.nitrogen_prescriptions)
         self.dlg.pushButton_6.clicked.connect(self.guide_to_user)
         self.dlg.pushButton_7.clicked.connect(self.scale_Napp_to_actual_size_of_grid)
+        self.dlg.pushButton_8.clicked.connect(self.select_output_directory_manually)
+
+        self.dlg.comboBox_3.currentIndexChanged.connect(self.add_output_dir_automatically)
+        self.dlg.listWidget_4.clicked.connect(self.find_INDEX_min_max_mean)
+        self.dlg.listWidget_4.currentItemChanged.connect(self.find_INDEX_min_max_mean)
+        
+        self.dlg.lineEdit_6.textChanged.connect(self.calculate_Napp_distribution)
 
         self.dlg.checkBox_4.setEnabled(False)
         self.dlg.checkBox_5.setEnabled(False)
@@ -257,7 +265,8 @@ class NDVItoVariableNitrogenApplicationMap:
         
         self.dlg.listWidget_2.addItems(listOfLayers)
         self.dlg.listWidget_2.sortItems()        
-        self.dlg.comboBox.addItems(['mean','median','count','sum', 'stdev', 'min', 'max'])
+        #self.dlg.comboBox.addItems(['mean','median','count','sum', 'stdev', 'min', 'max'])
+        self.dlg.comboBox.addItems(['mean']) #,'median','count','sum', 'stdev', 'min', 'max'])
         self.dlg.comboBox_2.addItems(['green','red','blue'])
         self.dlg.comboBox_4.addItems(['red','green','blue'])
 
@@ -288,6 +297,43 @@ class NDVItoVariableNitrogenApplicationMap:
         + '   - N app. map push button will produce final N application map.'        
         )
 
+    def add_output_dir_automatically(self):       
+        selectedLayer = str(self.dlg.comboBox_3.currentText())    
+        polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
+
+        myfilepath = polygonLayer.source()
+        myfilepath = os.path.dirname(myfilepath)
+        # myfilepath = myfilepath.strip('/vsizip/')
+        # # first try
+        # try:
+        if '.zip' in myfilepath:
+            myfilepath = os.path.dirname(myfilepath)
+            print ('me path', myfilepath)
+            QMessageBox.warning(None, 'Potential probelm with output directory path!', '...because of Input layer shape file might be zipped. Unzipp Input layer shape file, load into QGIS Lyers and start the plugin again! ')    
+        # except:
+            # print ('path seams ok')        
+        # #second try
+        # try:
+            # if '.zip' in myfilepath:
+                # myfilepath = os.path.dirname(myfilepath)
+                # print ('me path', myfilepath)
+                # QMessageBox.warning(None, 'Potential probelm with output directory path!', 'Output file can not be saved in zipped director. Zipped directory is removed automatically. In case if it was not removed automatically change Output directory manually with "Select Output Directory" push button! ')    
+        # except:
+            # print ('path seams ok') 
+        
+        print ('myfilepath input image', myfilepath) 
+        self.dlg.lineEdit_5.setText(str(myfilepath))
+
+    def select_output_directory_manually(self):
+        ###### print 'find directroy'
+        selectWorkingDir = QFileDialog.getExistingDirectory()
+        selectWorkingDir = os.path.normpath(selectWorkingDir)
+        print ('selected dir', selectWorkingDir)
+            
+        selectWorkingDir = selectWorkingDir #+ '\ProcessedOutputs'
+        selectWorkingDir = os.path.normpath(selectWorkingDir)
+        self.dlg.lineEdit_5.setText(selectWorkingDir)
+
     def yield_maximising_N_opt(self):
         self.dlg.checkBox_2.setChecked(True)
         self.dlg.checkBox_3.setChecked(False)
@@ -307,7 +353,11 @@ class NDVItoVariableNitrogenApplicationMap:
         percentInc = 100/int(numberOfSelectedLayers)
         percent = 0 
 
-        self.dlg.progressBar.setValue(0)
+        self.dlg.progressBar.setValue(1)
+        #progress = 0 
+        self.dlg.progressBar.setMinimum(percent)
+        self.dlg.progressBar.setMaximum(percent)
+        self.dlg.progressBar.setValue(percent)
         listOfLayersForLater = []
         meCounterCheck = 0
         for selectedImage in self.dlg.listWidget_2.selectedItems():
@@ -432,9 +482,15 @@ class NDVItoVariableNitrogenApplicationMap:
                 
                 myMin = np.min(listOfValues)
                 myMax = np.max(listOfValues)
+                myMean = np.mean(listOfValues)
                 
-                print ('myMin', myMin)
-                print ('myMax', myMax)
+                print ('myMin--', myMin)
+                print ('myMax--', myMax)
+                print ('myMean--', myMean)
+                
+                # self.myMinMe = myMin  
+                # self.myMaxMe = myMax
+                # self.myMeanMe = myMean
             ############
 
 
@@ -499,14 +555,18 @@ class NDVItoVariableNitrogenApplicationMap:
                    
             QgsProject.instance().reloadAllLayers()
 
+            self.dlg.progressBar.setMaximum(100)
             self.dlg.progressBar.setValue(int(round(percent)))
             QCoreApplication.processEvents()
             
 
          
             self.dlg.textBrowser.append('      *' + str(selectedLayer) + '-' + str(selectedLayer1) + '- Image Analysed and Layer added to Legend!')
-            
-            
+
+        # try:
+            # self.calculate_Napp_distribution()
+        # except:
+            # self.dlg.textBrowser.append('Problem while auto setup of Napp distrubiotion. Manual setup required.')
         #percent = percent + percentInc    
         #self.dlg.progressBar.setValue(int(percent))
         QCoreApplication.processEvents()
@@ -516,6 +576,62 @@ class NDVItoVariableNitrogenApplicationMap:
         self.dlg.listWidget_3.selectAll()
         
         ############################################ coloring different polygons based of field value - end    
+
+    def find_INDEX_min_max_mean(self):
+        
+        selectedLayer = self.dlg.listWidget_4.currentItem()
+        selectedLayer = selectedLayer.text()
+        print ('selectedLayer selectedLayer', selectedLayer)
+        layer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
+
+        for field in layer.fields():
+            idxIN = layer.dataProvider().fieldNameIndex(str(self.dlg.comboBox.currentText()))
+
+        listOfValues = []
+        for feature in layer.getFeatures():                    
+            #print ('field', feature.id(), 'value',feature.attributes()[idxIN])
+            listOfValues.append(float(feature.attributes()[idxIN]))
+        
+        myMin = np.min(listOfValues)
+        myMax = np.max(listOfValues)
+        myMean = np.mean(listOfValues)
+
+        print ('myMin---', myMin)
+        print ('myMax---', myMax)
+        print ('myMean---', myMean)
+        
+        self.myMinMeM = myMin  
+        self.myMaxMeM = myMax
+        self.myMeanMeM = myMean
+
+        try:
+            self.calculate_Napp_distribution()
+        except:
+            self.dlg.textBrowser.append('Problem while auto setup of Napp distrubiotion. Manual setup required.')
+            
+    def calculate_Napp_distribution(self):
+####################
+        print ('self.myMinMe',  self.myMinMeM)
+        print ('self.myMaxMe',  self.myMaxMeM)
+        print ('self.myMeanMe', self.myMeanMeM)            
+
+
+        lowPerc = (self.myMeanMeM - self.myMinMeM)/self.myMinMeM
+        highPerc = (self.myMaxMeM - self.myMeanMeM)/self.myMeanMeM
+
+        print ('lowPerc', lowPerc)
+        print ('highPerc', highPerc)
+        
+        reduceConv = int(self.dlg.lineEdit_6.text()) - (int(self.dlg.lineEdit_6.text()) * lowPerc)
+        increaseConv = int(self.dlg.lineEdit_6.text()) + (int(self.dlg.lineEdit_6.text()) * highPerc)
+
+        print ('reduceConv', reduceConv)
+        print ('increaseConv', increaseConv)
+        
+        self.dlg.lineEdit_3.setText(str(int(reduceConv)))
+        self.dlg.lineEdit_4.setText(str(int(increaseConv)))
+############################# 
+
 
     def calculate_time_series_trend(self):
         
@@ -537,9 +653,11 @@ class NDVItoVariableNitrogenApplicationMap:
         percent = 0        
         #fc = 5
 
-        myfilepath = polygonLayer.source()
-        myfilepath = os.path.dirname(myfilepath)
+        #myfilepath = polygonLayer.source()
+        #myfilepath = os.path.dirname(myfilepath)
+        myfilepath = str(self.dlg.lineEdit_5.text())
         print ('myfilepath input image', myfilepath) 
+        #self.dlg.lineEdit_5.setText(str(myfilepath))
 
         try:
             os.mkdir(myfilepath + '/SaveFigures')
@@ -599,8 +717,9 @@ class NDVItoVariableNitrogenApplicationMap:
         
         #fc = 5
 
-        myfilepath = polygonLayer.source()
-        myfilepath = os.path.dirname(myfilepath)
+        #myfilepath = polygonLayer.source()
+        #myfilepath = os.path.dirname(myfilepath)
+        myfilepath = str(self.dlg.lineEdit_5.text())
         print ('myfilepath input image', myfilepath) 
 
         for i in range (1, 2):
@@ -867,8 +986,9 @@ class NDVItoVariableNitrogenApplicationMap:
         selectedLayer = str(self.dlg.comboBox_3.currentText())    
         polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
 
-        myfilepathP = polygonLayer.source()
-        myfilepathP = os.path.dirname(myfilepathP)
+        #myfilepathP = polygonLayer.source()
+        #myfilepathP = os.path.dirname(myfilepathP)
+        myfilepathP = str(self.dlg.lineEdit_5.text())
         print ('myfilepathP input image', myfilepathP) 
 
         try:
@@ -958,6 +1078,10 @@ class NDVItoVariableNitrogenApplicationMap:
         ##############################               
 
     def nitrogen_prescriptions(self):
+
+
+
+
         print ('N prescriptions')
         self.dlg.textBrowser.append('\nSection 4.:')
         self.dlg.textBrowser.append('   Nitrogen prescriptions running...')
@@ -971,8 +1095,9 @@ class NDVItoVariableNitrogenApplicationMap:
         selectedLayer = str(self.dlg.comboBox_3.currentText())    
         polygonLayer = QgsProject.instance().mapLayersByName(selectedLayer)[0]
 
-        myfilepathP = polygonLayer.source()
-        myfilepathP = os.path.dirname(myfilepathP)
+        #myfilepathP = polygonLayer.source()
+        #myfilepathP = os.path.dirname(myfilepathP)
+        myfilepathP = str(self.dlg.lineEdit_5.text())
         print ('myfilepathP input image', myfilepathP) 
 
         try:
