@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/ndvi_to_variable_nitrogen_application_map" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>
