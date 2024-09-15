@@ -6,7 +6,7 @@
 name=NDVI and EVI Index Calculator
 qgisMinimumVersion=3.0
 description=This plugin calculates NDVI and EVI index from Sentinel 2 B02, B04 and B08 Bands.
-version=0.3
+version=0.4
 author=Emir Memic
 email=emir_memic@windowslive.com
 

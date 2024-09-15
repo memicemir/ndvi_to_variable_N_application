@@ -214,17 +214,17 @@ class NDVIandEVIindexCalculator:
         
         #add global processing counter
         #self.dlg.counterAn = 0
-        self.dlg.counterNDVI = 0
-        self.dlg.counterEVI = 0
+        #self.dlg.counterNDVI = 0
+        #self.dlg.counterEVI = 0
 
         self.dlg.listWidget.clear()
         self.dlg.listWidget_2.clear()
         self.dlg.listWidget_3.clear()     
         
         # i dont know if this makes any sense ...
-        self.dlg.checkBox.clicked.connect(self.run)        
-        if self.dlg.checkBox.isChecked():
-            self.dlg.lineEdit_2.textChanged.connect(self.run)
+        #self.dlg.checkBox.clicked.connect(self.run)        
+        # if self.dlg.checkBox.isChecked():
+            # self.dlg.lineEdit_2.textChanged.connect(self.run)
         
         self.dlg.pushButton.clicked.connect(self.guide_to_user)
         self.dlg.pushButton_4.clicked.connect(self.calculate_ndvi)
@@ -233,6 +233,11 @@ class NDVIandEVIindexCalculator:
         self.dlg.listWidget.clicked.connect(self.select_file_and_dir)
         self.dlg.listWidget.currentItemChanged.connect(self.select_file_and_dir)
 
+        #warnings
+        self.dlg.listWidget_2.clicked.connect(self.warning_for_selection)
+        self.dlg.listWidget_3.clicked.connect(self.warning_for_selection)    
+
+        #self.dlg.lineEdit_2.textChanged.connect(self.run)
         # add available layers into interface
         layers = self.iface.mapCanvas().layers()
         listOfLayersB08 = []
@@ -264,7 +269,12 @@ class NDVIandEVIindexCalculator:
         self.dlg.listWidget_2.sortItems()
         self.dlg.listWidget_3.sortItems()  
 
-        if int(countListWidget) != int(countListWidget_3) and self.dlg.checkBox.isChecked():
+        # if float(self.dlg.lineEdit_2.text()) > 0.99:
+            # self.dlg.lineEdit_2.setText('0.99')
+        # if float(self.dlg.lineEdit_2.text()) < 0.1:
+            # self.dlg.lineEdit_2.setText('0.1')
+
+        if int(countListWidget) != int(countListWidget_3): # and self.dlg.checkBox.isChecked():
             
             newListWidget3List = []
             self.dlg.listWidget.setSelectionMode(QAbstractItemView.ExtendedSelection)
@@ -278,7 +288,8 @@ class NDVIandEVIindexCalculator:
                     elementCheckN = listOfLayersB02[ii]
 
                     checkSimilarity = SequenceMatcher(None, elementCheck, elementCheckN).ratio()
-                    if float(checkSimilarity) > float(self.dlg.lineEdit_2.text()): #0.95:
+                    #if float(checkSimilarity) > float(self.dlg.lineEdit_2.text()): #0.95:
+                    if float(checkSimilarity) > 0.95:
                         print ('checkSimilarity', checkSimilarity)
                         itemAddMe = elementCheckN
                         
@@ -292,8 +303,8 @@ class NDVIandEVIindexCalculator:
         self.dlg.listWidget_2.setCurrentRow(0)
         self.dlg.listWidget_3.setCurrentRow(0)
 
-        if not self.dlg.checkBox.isChecked():        
-            self.dlg.listWidget_3.clear()
+        # if not self.dlg.checkBox.isChecked():        
+            # self.dlg.listWidget_3.clear()
 
         try:        
             selectedLayerB08 = str(self.dlg.listWidget.currentItem().text())            
@@ -324,6 +335,9 @@ class NDVIandEVIindexCalculator:
         #self.dlg.listWidget.setCurrentRow(0)
         #self.dlg.listWidget_2.setCurrentRow(0)
         #self.dlg.listWidget_3.setCurrentRow(0)
+
+        # if self.dlg.checkBox.isChecked():
+            # self.dlg.lineEdit_2.textChanged.connect(self.run)
             
         #### me-end
 
@@ -340,10 +354,10 @@ class NDVIandEVIindexCalculator:
     def guide_to_user(self):
         QMessageBox.information(None, 'Guide to user!', 
         'Three input layer windows show uploaded Bands in this plugin: Input layer 1. (B08 - Near Infrared), Input layer 2. (B04 - Red) and Input layer 3. (B02 - Blue)\n\n'
-        + 'If everything went well with upload, the selection (Mouse left click) of image band in Input layer 1. will automatically find matches in Input layer 2. and 3. windows (if PC or QGIS is slow, then wait until matchis in Input layer 2. and 3. are selected).\n\n'
-        + 'Only layer selection in Input layer 1. window will automatically match pairs in Input layer 2. and 3. The user can manually select matches in Input layer 1., 2., and 3. (Mouse left click).\n\n'
+        + 'If everything went well with upload, the selection (Mouse left click!) of image band in Input layer 1. will automatically find matches in Input layer 2. and 3. windows (if PC or QGIS is slow, then wait until matchis in Input layer 2. and 3. are selected).\n\n'
+        + 'IMPORTANT! Only layer selection in Input layer 1. window will automatically match pairs in Input layer 2. and 3. If not correct, the user can manually select matches in Input layer 1., 2., and 3. (Mouse left click).\n\n'
         + 'One selection at the time should be used for calculating NDVI or EVI with calculate NDVI and EVI pushbutton.\n\n'        
-        + 'Multi-selection based index calculation will be implemented in the next version, if requested.\n\n\n\n'        
+        + 'Multi-selection based index calculation will be implemented if requested.\n\n\n'        
 
         + 'To get images use your internet browser to access Coprnicus Browser and satellite images by following instructions:\n\n'
         + '1. Copernicus Browser - Create account and login.\n\n'
@@ -358,6 +372,11 @@ class NDVIandEVIindexCalculator:
         
         + 'After downloading images and loading them into QGIS Layers legend and restaring this QGIS plugin, the images will appear in QGIS plugin list widget for selection and NDVI, EVI calculations!'        
         )        
+
+    def warning_for_selection(self):
+        QMessageBox.information(None, 'IMPORTANT!', 
+        'Only layer selection in Input layer 1. window will automatically match pairs in Input layer 2. and 3. The user can manually select matches in Input layer 1., 2., and 3. (Mouse left click).\n\n'              
+        )      
 
     def select_output_directory(self):
         ###### print 'find directroy'
@@ -376,11 +395,11 @@ class NDVIandEVIindexCalculator:
 
     def select_file_and_dir(self):
         print ('calculate index')
-  
+        self.dlg.lineEdit_2.setText('')
         try:
             self.dlg.progressBar.setValue(1)
             selectedLayerB08 = str(self.dlg.listWidget.currentItem().text())            
-            polygonLayerB08 = QgsProject.instance().mapLayersByName(selectedLayerB08)[0] 
+            #polygonLayerB08 = QgsProject.instance().mapLayersByName(selectedLayerB08)[0] 
 
             # mePath = polygonLayerB08.dataProvider().dataSourceUri()
             # mePath = mePath.strip('/vsizip/')
@@ -427,6 +446,7 @@ class NDVIandEVIindexCalculator:
         myfilepath = os.path.normpath(myfilepath)
         print ('myfilepath input image', myfilepath)
         
+        self.dlg.lineEdit_2.setText('')
         #self.dlg.counterAn = self.dlg.counterAn + 1                  
 
         selectedLayerB08 = str(self.dlg.listWidget.currentItem().text())            
@@ -446,24 +466,42 @@ class NDVIandEVIindexCalculator:
             dateName = str(date).split('-')[1] + '-' + str(date).split('-')[2] + '-' + str(date).split('-')[0]
             print ('dateName', dateName)
         except:
-            self.dlg.counterNDVI = self.dlg.counterNDVI + 1 
-            dateName = 'analysis_counter_' + str(self.dlg.counterNDVI) 
+            #self.dlg.counterNDVI = self.dlg.counterNDVI + 1 
+            dateName = 'analysis' #_counter_' + str(self.dlg.counterNDVI) 
+
+
+        try:
+            removeIfExistFromLegend = str('ndvi_{}'.format(dateName)) 
+            removeIfExistFromLegendNow = QgsProject.instance().mapLayersByName(removeIfExistFromLegend)[0]      
+            QgsProject.instance().removeMapLayer(removeIfExistFromLegendNow.id())        
+            QgsProject.instance().reloadAllLayers()
+            QCoreApplication.processEvents()
+            QMessageBox.warning(None, 'Output Layer with the same name already existed!', 'Layer name already existed and was removed from legend in order to enable new processing: ' + str(removeIfExistFromLegend))
+        except:
+            print ('layer entry with the same name was not found.')
+
+
+        if os.path.isfile('{}/ndvi_{}.tiff'.format(myfilepath, dateName)):
+            os.remove('{}/ndvi_{}.tiff'.format(myfilepath, dateName))
+            QMessageBox.warning(None, 'Output file with the same name already existed!', str('{}/ndvi_{}.tiff'.format(myfilepath, dateName)) + ' - file deleted in order to enable new processing!')
         
         ################
         self.dlg.progressBar.setValue(1)
         progress = 0 
-        self.dlg.progressBar.setMinimum(progress)
-        self.dlg.progressBar.setMaximum(progress)
-        self.dlg.progressBar.setValue(progress)
-        
+        #self.dlg.progressBar.setMinimum(progress)
+        #self.dlg.progressBar.setMaximum(progress)
+        #self.dlg.progressBar.setValue(progress)
+        print ('processing...')
+        self.dlg.lineEdit_2.setText('processing...')
+        QCoreApplication.processEvents()
         def progress_changed(progress):
             print(progress)
-            self.dlg.progressBar.setMaximum(100)
+            #self.dlg.progressBar.setMaximum(100)
             self.dlg.progressBar.setValue(int(progress))
-            #QCoreApplication.processEvents()
+            QCoreApplication.processEvents()
 
         f = QgsProcessingFeedback()
-        f.progressChanged.connect(progress_changed)                
+        f.progressChanged.connect(progress_changed)   
         ################
 
         processing.runAndLoadResults("gdal:rastercalculator", 
@@ -480,10 +518,15 @@ class NDVIandEVIindexCalculator:
          'OUTPUT':'{}/ndvi_{}.tiff'.format(myfilepath, dateName)
          }, feedback=f)   
         
+        #print('finished.')
+        self.dlg.progressBar.setValue(100)
+        self.dlg.lineEdit_2.setText('finished.')
+        QCoreApplication.processEvents()
          
     def calculate_evi(self):
         print ('calculate index')
-
+        self.dlg.lineEdit_2.setText('')
+        
         myfilepath = str(self.dlg.lineEdit.text())
         myfilepath = os.path.normpath(myfilepath)    
         print ('myfilepath input image', myfilepath) 
@@ -508,24 +551,41 @@ class NDVIandEVIindexCalculator:
             dateName = str(date).split('-')[1] + '-' + str(date).split('-')[2] + '-' + str(date).split('-')[0]
             print ('dateName', dateName)
         except:
-            self.dlg.counterEVI = self.dlg.counterEVI + 1 
-            dateName = 'analysis_counter_' + str(self.dlg.counterEVI) 
+            #self.dlg.counterEVI = self.dlg.counterEVI + 1 
+            dateName = 'analysis' #_counter_' + str(self.dlg.counterEVI) 
+
+        try:
+            removeIfExistFromLegend = str('evi_{}'.format(dateName)) 
+            removeIfExistFromLegendNow = QgsProject.instance().mapLayersByName(removeIfExistFromLegend)[0]      
+            QgsProject.instance().removeMapLayer(removeIfExistFromLegendNow.id())        
+            QgsProject.instance().reloadAllLayers()
+            QCoreApplication.processEvents()
+            QMessageBox.warning(None, 'Output Layer with the same name already existed!', 'Layer name already existed and was removed from legend in order to enable new processing: ' + str(removeIfExistFromLegend))
+        except:
+            print ('layer entry with the same name was not found.')
+
+
+        if os.path.isfile('{}/evi_{}.tiff'.format(myfilepath, dateName)):
+            os.remove('{}/evi_{}.tiff'.format(myfilepath, dateName))
+            QMessageBox.warning(None, 'Output file with the same name already existed!', str('{}/evi_{}.tiff'.format(myfilepath, dateName)) + ' - file deleted in order to enable new processing!')
         
         ################
         self.dlg.progressBar.setValue(1)
         progress = 0 
-        self.dlg.progressBar.setMinimum(progress)
-        self.dlg.progressBar.setMaximum(progress)
-        self.dlg.progressBar.setValue(progress)
+        #self.dlg.progressBar.setMinimum(progress)
+        #self.dlg.progressBar.setMaximum(progress)
+        #self.dlg.progressBar.setValue(progress)
+        self.dlg.lineEdit_2.setText('processing...')
+        QCoreApplication.processEvents()
         
         def progress_changed(progress):
             print(progress)
-            self.dlg.progressBar.setMaximum(100)
+            #self.dlg.progressBar.setMaximum(100)
             self.dlg.progressBar.setValue(int(progress))
-            #QCoreApplication.processEvents()
+            QCoreApplication.processEvents()
 
         f = QgsProcessingFeedback()
-        f.progressChanged.connect(progress_changed)                
+        f.progressChanged.connect(progress_changed)   
         ################        
 
         processing.runAndLoadResults("gdal:rastercalculator", 
@@ -543,4 +603,7 @@ class NDVIandEVIindexCalculator:
          'OUTPUT':'{}/evi_{}.tiff'.format(myfilepath, dateName)
          #'OUTPUT':outfile
          }, feedback=f) 
- 
+
+        self.dlg.progressBar.setValue(100)
+        self.dlg.lineEdit_2.setText('finished.')
+        QCoreApplication.processEvents() 
