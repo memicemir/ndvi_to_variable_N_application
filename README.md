@@ -1,7 +1,9 @@
 # ndvi_to_variable_N_application
 Lecture notes - Education purpose -> By hand - NDVI to variable N application map (manually producing site-specific N application map with QGIS).
 
-The "NDVI and EVI Index Calculator" v.:0.2 and "NDVI to Variable Nitrogen Application Map" plugin v.:0.5 were succesfully tested in QGIS 3.22 and 3.34 versions.
+The "NDVI and EVI Index Calculator" v.:0.4 and "NDVI to Variable Nitrogen Application Map" plugin v.:0.8 were succesfully tested in QGIS 3.22 and 3.34 versions.
+
+Options available in interface of "NDVI to Variable Nitrogen Application Map" version 0.8 are the same as in 0.7, and the Guide to User of version 0.7 should be used!
 
 Purpose of these two plugins is use of NDVI (or EVI) index for producing site-specific nitrogen application maps in agriculture (Precision Agriculture). 
 
