@@ -18,4 +18,4 @@ Use: https://github.com/memicemir/ndvi_to_variable_N_application/tree/main/Sampl
 
 Use: https://github.com/memicemir/ndvi_to_variable_N_application/tree/main/RGB_Index_Calculator-sample - sample image and shape file to test "RGB Index Calculator" and "NDVI to Variable Nitrogen Application Map" in case of any issues.
 
-Report Bugs and issues here at GitHub!
+Report Bugs and Issues here at GitHub!
