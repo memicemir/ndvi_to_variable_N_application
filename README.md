@@ -1,5 +1,5 @@
 # ndvi_to_variable_N_application
-Updates on: "NDVI and EVI Index Calculator" v. 0.4 and "NDVI to Variable Nitrogen Application Map" plugin v. 0.9 and "RGB Index Calculator" plugin v. 0.2.
+Updates on 29-10-2025: "NDVI and EVI Index Calculator" v. 0.4 and "NDVI to Variable Nitrogen Application Map" plugin v. 0.9 and "RGB Index Calculator" plugin v. 0.2.
 
 Lecture notes - Education purpose -> By hand - NDVI to variable N application map (manually producing site-specific N application map with QGIS).
 
