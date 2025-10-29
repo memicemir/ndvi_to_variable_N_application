@@ -1,5 +1,0 @@
-<RCC>
-    <qresource prefix="/plugins/rgb_index_calculator" >
-        <file>icon.png</file>
-    </qresource>
-</RCC>
