@@ -32,14 +32,15 @@ from .rgb_index_calculator_dialog import RGBIndexCalculatorDialog
 import os.path
 
 
-#me
-from osgeo import gdal
+# me
+# from osgeo import gdal
 from qgis.core import *
 from qgis.utils import *
 from qgis.utils import reloadPlugin
-import processing
+# import processing
 from qgis.analysis import QgsRasterCalculatorEntry, QgsRasterCalculator
-from qgis.PyQt.QtWidgets import QMessageBox
+# from qgis.PyQt.QtWidgets import QMessageBox
+
 
 class RGBIndexCalculator:
     """QGIS Plugin Implementation."""

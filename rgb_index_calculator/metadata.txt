@@ -6,7 +6,7 @@
 name=RGB Index Calculator
 qgisMinimumVersion=3.0
 description=This plugin is used for calculaitng image (raster) index values based on RGB images. The index calculation formulas are based on "NDVI Estimation Througout the Whole Growth Period of Multi-Crops Using RGB Images and Deep Learning" publication by Wang et al. 2025.
-version=0.2
+version=0.3
 author=Emir Memic
 email=emir_memic@windowslive.com
 
